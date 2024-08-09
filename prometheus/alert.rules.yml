@@ -1,0 +1,11 @@
+groups:
+  - name: CVE Alerts
+    rules:
+      - alert: UnresolvedCVE
+        expr: cve_status == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Unresolved CVE detected (CVE: {{ $labels.cve }})"
+          description: "CVE {{ $labels.cve }} is unresolved on instance {{ $labels.instance }}."

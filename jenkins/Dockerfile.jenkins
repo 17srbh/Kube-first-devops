@@ -1,0 +1,33 @@
+# Start from the Jenkins base image
+FROM jenkins/jenkins:lts
+
+# Switch to root user to perform installation
+USER root
+
+# Install necessary packages, including Ansible
+RUN apt-get update && apt-get install -y \
+    sudo \
+    ansible \
+    openssh-client \
+    openssh-server
+
+# Create the ansible-user
+RUN useradd -m ansible-user && \
+    echo "ansible-user:password" | chpasswd && \
+    usermod -aG sudo ansible-user
+
+# Configure sudoers to allow ansible-user to use sudo without a password
+RUN echo "ansible-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ansible-user
+RUN echo "jenkins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/jenkins
+
+# Generate SSH keys for the ansible-user
+RUN mkdir -p /home/ansible-user/.ssh && \
+    ssh-keygen -t rsa -b 2048 -f /home/ansible-user/.ssh/id_rsa -N "" && \
+    chown -R ansible-user:ansible-user /home/ansible-user/.ssh
+
+# Switch back to Jenkins user (or remain as ansible-user depending on your needs)
+USER jenkins
+
+# Expose Jenkins port
+EXPOSE 8080
+

@@ -1,0 +1,4 @@
+# Server: ip-172-31-25-124
+cve_status{server="ip-172-31-25-124", cve="CVE-2021-12345"}1
+cve_status{server="ip-172-31-25-124", cve="CVE-2021-23456"}0
+cve_status{server="ip-172-31-25-124", cve="CVE-2021-34567"}0

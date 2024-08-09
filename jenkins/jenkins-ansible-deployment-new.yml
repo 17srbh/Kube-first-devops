@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: devops-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: srbhdockerhub1st/anisble-jenkins-root-docker-image-new
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: true
+          readOnlyRootFilesystem: false
+          runAsUser: 0
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+        - name: ansible-data
+          mountPath: /project/ansible
+        - name: node-exporter-data
+          mountPath: /project/node-exporter
+        resources:
+          limits:
+            memory: "3Gi"
+          requests:
+            memory: "2Gi"
+      volumes:
+      - name: jenkins-data
+        persistentVolumeClaim:
+          claimName: jenkins-pv-claim
+      - name: ansible-data
+        persistentVolumeClaim:
+          claimName: ansible-pv-claim
+      - name:  node-exporter-data
+        persistentVolumeClaim:
+          claimName: node-exporter-pv-claim
+

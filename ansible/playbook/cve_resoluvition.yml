@@ -1,0 +1,48 @@
+---
+- name: Check installed package versions
+  hosts: "{{ target_server }}"
+  gather_facts: yes
+  become: yes
+  vars:
+    ansible_user: "Ansible-user"
+  vars_files:
+    - /project/ansible/vars/cve_packages.yml
+
+  tasks:
+    - name: Gather installed package information
+      package_facts:
+
+    - name: Initialize CVE status dictionary
+      set_fact:
+        cve_status: {}
+
+    - name: Check CVE resolution status
+      set_fact:
+        cve_status: "{{ cve_status | combine({ item.cve: 'Unresolved' }) }}"
+      when: ansible_facts.packages[item.name] is not defined or ansible_facts.packages[item.name][0].version is version(item.version, '<')
+      loop: "{{ required_packages }}"
+
+    - name: Mark CVE as resolved
+      set_fact:
+        cve_status: "{{ cve_status | combine({ item.cve: 'Resolved' }) }}"
+      when: ansible_facts.packages[item.name] is defined and ansible_facts.packages[item.name][0].version is version(item.version, '>=') 
+      loop: "{{ required_packages }}"
+
+    - name: Output the CVE resolution status
+      debug:
+        msg: |
+          CVE Resolution Status:
+          {% for cve, status in cve_status.items() %}
+          - CVE: {{ cve }} is {{ status }}
+          {% endfor %}
+
+   
+    - name: Write CVE status to metrics file
+      copy:
+        dest: "/tmp/cve_metrics.prom"
+        content: |
+          # Server: {{ansible_hostname}}
+          {% for cve, status in cve_status.items() %}
+          cve_status{server="{{ ansible_hostname }}", cve="{{ cve }}"}{{ 1 if status == 'Unresolved' else 0 }}
+          {% endfor %}
+

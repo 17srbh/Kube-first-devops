@@ -1,0 +1,11 @@
+required_packages:
+  - name: httpd
+    version: 2.4.6
+    cve: "CVE-2021-12345"
+  - name: openssl
+    version: 1.1.1
+    cve: "CVE-2021-23456"
+  - name: bash
+    version: 4.2
+    cve: "CVE-2021-34567"
+
