@@ -1,0 +1,11 @@
+---
+- name: Fetch CVE data from the target server
+  hosts: "{{ target_server }}"
+  become: yes
+  tasks:
+    - name: Fetch the CVE status file from the target server to the control node
+      fetch:
+        src: "/tmp/cve_metrics.prom"
+        dest: "/project/node-exporter/textfile_collector/cve_metrics.prom"
+        flat: yes
+
